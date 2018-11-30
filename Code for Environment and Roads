@@ -1,0 +1,31 @@
+//Code for Environment (Trees + Road)
+    var environment: UIImageView!
+    var roads: UIImageView!
+    
+    func createEnv()
+    {
+        environment = UIImageView()
+        environment.frame = CGRect(x: 0, y: 0, width: self.widthScreen, height: self.heightScreen)
+        
+        var treeImages: [UIImage] = [UIImage(named: "Tree1")!]
+        for i in 2 ... 17
+        {
+            treeImages += [UIImage(named: "Tree\(i)")!]
+            environment.image = UIImage.animatedImage(with: treeImages, duration: 1)
+        }
+        view.addSubview(environment)
+    }
+    
+    func createRoads()
+    {
+        roads = UIImageView()
+        roads.frame = CGRect(x: 0, y: 0, width: self.widthScreen, height: self.heightScreen)
+        
+        var roadImages: [UIImage] = [UIImage(named: "Road1")!]
+        for i in 2 ... 19
+        {
+            roadImages += [UIImage(named: "Road\(i)")!]
+            roads.image = UIImage.animatedImage(with: roadImages, duration: 1)
+        }
+        view.addSubview(roads)
+    }
