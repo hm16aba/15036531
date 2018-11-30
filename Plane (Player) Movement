@@ -1,0 +1,20 @@
+// Player (Plane) Movement
+    var position: CGPoint?
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)
+    {
+        position = touches.first?.location(in: player)
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?)
+    {
+        if player == nil
+        {
+            return
+        }
+        let initialPosition = touches.first?.location(in: player)
+        let dx = initialPosition!.x - position!.x
+        let dy = initialPosition!.y - position!.y
+        player.center = CGPoint(x: player.center.x+dx, y: player.center.y+dy)
+        collision.removeAllBoundaries()
+        collision.addBoundary(withIdentifier: "Plane" as NSCopying, for: UIBezierPath(rect: player.frame))
+    }
