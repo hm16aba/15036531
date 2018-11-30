@@ -1,0 +1,39 @@
+//Behaviours and Functionality
+    var functionality: UIDynamicItemBehavior!
+    var collision: UICollisionBehavior!
+    var movement: UIDynamicAnimator!
+    
+    var bird: [UIImageView] = []
+    var coin: [UIImageView] = []
+    
+    var scoreSystem: Int!
+    
+    func createFunc()
+    {
+        functionality = UIDynamicItemBehavior(items:[])
+        collision = UICollisionBehavior(items:[])
+        collision.collisionMode = UICollisionBehaviorMode.boundaries
+        collision.addBoundary(withIdentifier: "plane" as NSCopying, for: UIBezierPath(rect: player.frame))
+        movement.addBehavior(functionality)
+        movement.addBehavior(collision)
+        collision.action =
+        {
+            for crow in self.bird
+            {
+                if(self.player.frame.intersects(crow.frame))
+                {
+                    self.scoreSystem = +(-100) as Int
+                }
+                for coins in self.coin
+                {
+                    if(self.player.frame.intersects(coins.frame))
+                    {
+                        self.scoreSystem = +(+100) as Int
+                        self.functionality.removeItem(coins)
+                        self.collision.removeItem(coins)
+                        coins.removeFromSuperview()
+                    }
+                }
+            }
+        }
+    }
