@@ -1,0 +1,261 @@
+/*
+ ViewController.swift
+ Mobile Computing Coursework
+
+ Created by hm16aba on 24/11/2018.
+ Copyright © 2018 hm16aba. All rights reserved.
+ 
+ Himesh Menghani Khiani - 15036531
+ Mobile Computing Coursework
+*/
+
+import UIKit
+
+class ViewController: UIViewController
+{
+    func test()
+    {
+        createRoads()
+        createEnv()
+        createPlayer()
+        createFunc()
+        createBirds()
+        createCoins()
+        
+        let gameLength = DispatchTime.now() + 20
+        DispatchQueue.main.asyncAfter(deadline: gameLength)
+        {
+            for view in self.view.subviews
+            {
+                view.removeFromSuperview()
+            }
+            self.bird = []
+            self.coin = []
+            self.movement.removeAllBehaviors()
+            let finish = UIImageView(image: UIImage(named: "game_over"))
+            finish.frame = CGRect(x: 0, y: 0, width: self.widthScreen, height: self.heightScreen)
+            self.view.addSubview(finish)
+            
+            let scoreBoard = UILabel()
+            scoreBoard.text = "score: \(self.scoreSystem!)"
+            scoreBoard.textColor = UIColor.magenta
+            scoreBoard.frame = CGRect(x: self.widthScreen / 2 - 100, y: self.heightScreen / 2 - 100, width: 247, height: 75)
+            self.view.addSubview(scoreBoard)
+            
+            let replayBoard = UIButton()
+            replayBoard.frame = CGRect(x: self.widthScreen / 2 - 60, y: self.heightScreen / 2 - 60, width: 247, height: 100)
+            replayBoard.setBackgroundImage(UIImage(named: "replay"), for: UIControlState.normal)
+            replayBoard.addTarget(self, action: #selector(self.restart), for: .touchUpInside)
+            self.view.addSubview(replayBoard)
+            
+            
+            
+        }
+    }
+    
+    @objc func restart(sender: UIButton!) {
+        
+        for view in self.view.subviews {
+            view.removeFromSuperview()
+        }
+        test()
+    }
+    
+    
+    
+    
+    //Plane Code - Plane is Player
+    var player: UIImageView!
+
+    func createPlayer()
+    {
+        player = UIImageView()
+        player.frame = CGRect(x: 0, y: self.heightScreen / 4 , width: 130, height: 80)
+        
+        var playerImages: [UIImage] = [UIImage(named: "plane1")!]
+        for i in 2 ... 15
+        {
+        playerImages += [UIImage(named: "plane\(i)")!]
+        player.image = UIImage.animatedImage(with: playerImages, duration: 1)
+        }
+        view.addSubview(player)
+    }
+    
+
+    
+    //Code for Environment (Trees + Road)
+    var widthScreen: CGFloat!
+    var heightScreen: CGFloat!
+    var environment: UIImageView!
+    var roads: UIImageView!
+    
+    func createEnv()
+    {
+        environment = UIImageView()
+        environment.frame = CGRect(x: 0, y: 0, width: self.widthScreen, height: self.heightScreen)
+        
+        var treeImages: [UIImage] = [UIImage(named: "tree1")!]
+        for i in 2 ... 17
+        {
+            treeImages += [UIImage(named: "tree\(i)")!]
+            environment.image = UIImage.animatedImage(with: treeImages, duration: 1)
+        }
+        view.addSubview(environment)
+    }
+    
+    func createRoads()
+    {
+        roads = UIImageView()
+        roads.frame = CGRect(x: 0, y: 0, width: self.widthScreen, height: self.heightScreen)
+        
+        var roadImages: [UIImage] = [UIImage(named: "road1")!]
+        for i in 2 ... 19
+        {
+            roadImages += [UIImage(named: "road\(i)")!]
+            roads.image = UIImage.animatedImage(with: roadImages, duration: 1)
+        }
+        view.addSubview(roads)
+    }
+    
+    
+    
+    //Behaviours and Functionality
+    var functionality: UIDynamicItemBehavior!
+    var collision: UICollisionBehavior!
+    var movement: UIDynamicAnimator!
+    
+    var bird: [UIImageView] = []
+    var coin: [UIImageView] = []
+    
+    var scoreSystem: Int!
+    
+    func createFunc()
+    {
+        functionality = UIDynamicItemBehavior(items:[])
+        collision = UICollisionBehavior(items:[])
+        collision.collisionMode = UICollisionBehaviorMode.boundaries
+        collision.addBoundary(withIdentifier: "plane" as NSCopying, for: UIBezierPath(rect: player.frame))
+        movement.addBehavior(functionality)
+        movement.addBehavior(collision)
+        collision.action =
+        {
+            for crow in self.bird
+            {
+                if(self.player.frame.intersects(crow.frame))
+                {
+                    self.scoreSystem = +(-100) as Int
+                }
+                for coins in self.coin
+                {
+                    if(self.player.frame.intersects(coins.frame))
+                    {
+                        self.scoreSystem = +(+100) as Int
+                        self.functionality.removeItem(coins)
+                        self.collision.removeItem(coins)
+                        coins.removeFromSuperview()
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    
+    //Player (Plane) Movement
+    var position: CGPoint?
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)
+    {
+        position = touches.first?.location(in: player)
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?)
+    {
+        if player == nil
+        {
+            return
+        }
+        let initialPosition = touches.first?.location(in: player)
+        let dx = initialPosition!.x - position!.x
+        let dy = initialPosition!.y - position!.y
+        player.center = CGPoint(x: player.center.x+dx, y: player.center.y+dy)
+        collision.removeAllBoundaries()
+        collision.addBoundary(withIdentifier: "plane" as NSCopying, for: UIBezierPath(rect: player.frame))
+    }
+
+    
+
+    //Creating Birds and their Movement
+    func createBirds()
+    {
+        var birdImages: [UIImage] = [UIImage(named: "bird1")!]
+        for i in 2 ... 10
+        {
+            birdImages += [UIImage (named: "bird\(i)")!]
+        }
+        let birdsImage = UIImage.animatedImage(with: birdImages, duration: 1)
+        
+        for _ in 1 ... 10
+        {
+            let time = DispatchTime.now() + Double(arc4random_uniform(10))
+            let velocity: Double = Double(arc4random_uniform(500))
+            let bHeight = CGFloat(Float(arc4random_uniform(UInt32(heightScreen - 75))))
+            DispatchQueue.main.asyncAfter(deadline: time)
+            {
+                let pigeon = UIImageView(image: birdsImage)
+                pigeon.frame = CGRect(x: self.widthScreen, y: bHeight, width: 100, height: 100)
+                self.view.addSubview(pigeon)
+                self.functionality.addItem(pigeon)
+                self.functionality.addLinearVelocity(CGPoint(x: -velocity, y: 0), for: pigeon)
+                self.collision.addItem(pigeon)
+                self.bird.append(pigeon)
+                DispatchQueue.main.asyncAfter(deadline: time + Double(ceil(Float(self.widthScreen) / Float(velocity))) + 1)
+                    {
+                        self.functionality.removeItem(pigeon)
+                        self.collision.removeItem(pigeon)
+                        pigeon.removeFromSuperview()
+                }
+            }
+        }
+    }
+    
+    
+    
+    //Creating Coins
+    func createCoins()
+    {
+        for _ in 1 ... 10
+        {
+            let time = DispatchTime.now() + Double(arc4random_uniform(10))
+            let velocity: Double = Double(arc4random_uniform(500))
+            let cHeight = CGFloat(Float(arc4random_uniform(UInt32(heightScreen - 75))))
+            DispatchQueue.main.asyncAfter(deadline: time)
+            {
+                let money = UIImageView(image: UIImage(named: "coin")!)
+                money.frame = CGRect(x: self.widthScreen, y: cHeight, width: 100, height: 100)
+                self.view.addSubview(money)
+                self.functionality.addItem(money)
+                self.functionality.addLinearVelocity(CGPoint(x: -velocity, y: 0), for: money)
+                self.collision.addItem(money)
+                self.coin.append(money)
+                DispatchQueue.main.asyncAfter(deadline: time + Double(ceil(Float(self.widthScreen) / Float(velocity))) + 1)
+                {
+                    self.functionality.removeItem(money)
+                    self.collision.removeItem(money)
+                    money.removeFromSuperview()
+                }
+            }
+        }
+    }
+    
+
+    
+    override func viewDidLoad() {
+        
+        super.viewDidLoad()
+        widthScreen = UIScreen.main.bounds.size.width
+        heightScreen = UIScreen.main.bounds.size.height
+        movement = UIDynamicAnimator(referenceView: self.view)
+        test()
+        //Do any additional setup after loading the view, typically from a nib.
+    }
+}
