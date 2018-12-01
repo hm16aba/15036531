@@ -1,0 +1,26 @@
+  //Creating Coins
+        func createCoins()
+        {
+            let coinNumber = Int(arc4random_uniform(10))
+            for _ in 1 ... coinNumber
+            {
+                let time = DispatchTime.now() + Double(arc4random_uniform(10))
+                let velocity: Double = Double(arc4random_uniform(500))
+                let cHeight = CGFloat(Float(arc4random_uniform(50)))
+                DispatchQueue.main.asyncAfter(deadline: time)
+                {
+                    let money = UIImageView(image: UIImage(named: "coin")!)
+                    money.frame = CGRect(x: self.widthScreen, y: cHeight, width: 100, height: 100)
+                    self.view.addSubview(money)
+                    self.functionality.addItem(money)
+                    self.functionality.addLinearVelocity(CGPoint(x: -velocity, y: 0), for: money)
+                    self.collision.addItem(money)
+                    self.coin.append(money)
+                    DispatchQueue.main.asyncAfter(deadline: time + Double(ceil(Float(self.widthScreen) / Float(velocity))) + 1)
+                    {
+                        self.functionality.removeItem(money)
+                        self.collision.removeItem(money)
+                        money.removeFromSuperview()
+                    }
+                }
+            }
